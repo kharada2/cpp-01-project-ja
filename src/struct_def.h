@@ -9,6 +9,6 @@ typedef struct {
 typedef struct {
   Position player_position;
   std::string direction;
-  int u1_speed;     // [m/s]
-  int u1_gasoline;  // [%]
+  int s1_speed;     // [m/s]
+  int s1_gasoline;  // [%]
 } VehicleState;

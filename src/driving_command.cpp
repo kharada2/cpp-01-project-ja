@@ -8,14 +8,14 @@ namespace DrivingCommand {
 
 std::string ChangeDirectionLeft(const std::string& d) {
   std::string result;
-  if (d == "North") {
-    result = "West";
-  } else if (d == "West") {
-    result = "South";
-  } else if (d == "South") {
-    result = "East";
+  if (d == "↑") {
+    result = "←";
+  } else if (d == "←") {
+    result = "↓";
+  } else if (d == "↓") {
+    result = "→";
   } else {
-    result = "North";
+    result = "↑";
   }
 
   return result;
@@ -24,82 +24,70 @@ std::string ChangeDirectionLeft(const std::string& d) {
 std::string ChangeDirectionRight(const std::string& d) {
   std::string result;
 
-  if (d == "North") {
-    result = "East";
-  } else if (d == "East") {
-    result = "South";
-  } else if (d == "South") {
-    result = "West";
+  if (d == "↑") {
+    result = "→";
+  } else if (d == "→") {
+    result = "↓";
+  } else if (d == "↓") {
+    result = "←";
   } else {
-    result = "North";
+    result = "↑";
   }
   return result;
 }
 
-int U1UpdateGasoline(const int u1_speed, const int u1_gasoline) { return std::max(u1_gasoline - u1_speed, 0); }
+int UpdateGasoline(const int s1_speed, const int s1_gasoline) { return std::max(s1_gasoline - s1_speed, 0); }
 
-bool isGoalReached(const std::vector<std::vector<char>>& map, const Position& position) {
-  // プレイヤーの位置がゴールであるかをチェックする
-  if (map[position.y][map.size() - 1 - position.x] == 'g') {
-    return true;
-  }
-
-  return false;
-}
-
-Position UpdatePosition(const Position& position, std::string direction, const int u1_speed) {
+Position UpdatePosition(const Position& position, std::string direction, const int s1_speed,
+                        const std::vector<std::vector<char>>& map) {
   Position result = {position.x, position.y};
 
-  if (direction == "North") {
-    result.y = position.y + u1_speed;
-  } else if (direction == "East") {
-    result.x = position.x + u1_speed;
-  } else if (direction == "South") {
-    result.y = position.y - u1_speed;
-  } else if (direction == "West") {
-    result.x = position.x - u1_speed;
+  if (direction == "↑") {
+    result.y = position.y + s1_speed;
+  } else if (direction == "→") {
+    result.x = position.x + s1_speed;
+  } else if (direction == "↓") {
+    result.y = position.y - s1_speed;
+  } else if (direction == "←") {
+    result.x = position.x - s1_speed;
   }
 
-  // ゴール判定
-  bool fg_is_goal = isGoalReached(RoadMap::VdGenerateMap(), result);
-  if (fg_is_goal) {
-    std::cout << "クリア！。" << std::endl;
-  }
-
-  // 移動先が壁だったら位置を更新しない
-  std::vector<std::vector<char>> map = RoadMap::VdGenerateMap();
-  if (map[result.y][map.size() - 1 - result.x] == '#') {
-    std::cout << "壁なので進めません。" << std::endl;
+  //  範囲外だったら停止
+  std::cout << position.x << " " << position.y << std::endl;
+  std::cout << result.x << " " << result.y << std::endl;
+  if (result.x >= map[0].size() - 1 || result.y >= map.size() - 1) {
+    std::cout << "!!! 領域外なので進めません。" << std::endl;
+  } else if (map[map.size() - 1 - result.y][result.x] == '#') {
+    std::cout << "!!! 壁なので進めません。" << std::endl;
     result = {position.x, position.y};
   }
-  std::cout << "Curent" << map[result.y][map.size() - 1 - result.x] << std::endl;
 
   return result;
 }
 
-void VdUpdateDrivingState(const char& command, VehicleState& vs) {
+void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vector<std::vector<char>>& map) {
   switch (command) {
     case 'a':
-      vs.u1_speed++;
-      vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.u1_speed);
-      vs.u1_gasoline = U1UpdateGasoline(vs.u1_speed, vs.u1_gasoline);
+      vs.s1_speed++;
+      vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
+      vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline);
       break;
 
     case 'b':
-      if (vs.u1_speed > 0) {
-        vs.u1_speed--;
-        vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.u1_speed);
-        vs.u1_gasoline = U1UpdateGasoline(vs.u1_speed, vs.u1_gasoline);
+      if (vs.s1_speed > 0) {
+        vs.s1_speed--;
+        vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
+        vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline);
       }
       break;
 
     case 'g':
-      vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.u1_speed);
-      vs.u1_gasoline = U1UpdateGasoline(vs.u1_speed, vs.u1_gasoline);
+      vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
+      vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline);
       break;
 
     case 's':
-      vs.u1_speed = 0;
+      vs.s1_speed = 0;
       break;
 
     case 'l':
@@ -109,24 +97,25 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs) {
     case 'r':
       vs.direction = ChangeDirectionRight(vs.direction);
       break;
-
-    case 'm':
-      // 地図の表示
-      std::vector<std::vector<char>> map = RoadMap::VdGenerateMap();
-      for (int i = 0; i < map.size(); i++) {
-        for (int j = 0; j < map[i].size(); j++) {
-          if (vs.player_position.x == j && vs.player_position.y == (map.size() - 1 - i)) {
-            std::cout << "E ";
-          } else {
-            std::cout << map[i][j] << " ";
-          }
-        }
-        std::cout << std::endl;
-      }
-      break;
   }
 
   return;
 }
 
 }  // namespace DrivingCommand
+
+namespace Display {
+void VdShowMap(const std::vector<std::vector<char>>& map, const Position& player_position) {
+  std::cout << "▼▼▼ MAP (E: 自車位置, G: ゴール) ▼▼▼" << std::endl;
+  for (int i = 0; i < map.size(); i++) {
+    for (int j = 0; j < map[i].size(); j++) {
+      if (player_position.x == j && player_position.y == (map.size() - 1 - i)) {
+        std::cout << "E ";
+      } else {
+        std::cout << map[i][j] << " ";
+      }
+    }
+    std::cout << std::endl;
+  }
+}
+}  // namespace Display

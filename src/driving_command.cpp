@@ -36,8 +36,17 @@ std::string ChangeDirectionRight(const std::string& d) {
   return result;
 }
 
-int UpdateGasoline(const int s1_speed, const int s1_gasoline) { return std::max(s1_gasoline - s1_speed, 0); }
+int UpdateGasoline(const int s1_speed, const int s1_gasoline, const Position& position,
+                   const std::vector<std::vector<char>>& map) {
+  int result = std::max(s1_gasoline - s1_speed, 0);
+  // ガソリン補充
+  if (map[map.size() - 1 - position.y][position.x] == 'F') {
+    std::cout << "給油完了" << std::endl;
+    result = 100;
+  }
 
+  return result;
+}
 Position UpdatePosition(const Position& position, std::string direction, const int s1_speed,
                         const std::vector<std::vector<char>>& map) {
   Position result = {position.x, position.y};
@@ -52,12 +61,11 @@ Position UpdatePosition(const Position& position, std::string direction, const i
     result.x = position.x - s1_speed;
   }
 
-  //  範囲外だったら停止
-  std::cout << position.x << " " << position.y << std::endl;
-  std::cout << result.x << " " << result.y << std::endl;
   if (result.x >= map[0].size() - 1 || result.y >= map.size() - 1) {
     std::cout << "!!! 領域外なので進めません。" << std::endl;
+    result = {position.x, position.y};
   } else if (map[map.size() - 1 - result.y][result.x] == '#') {
+    //  途中に壁があっても進めないようにする。
     std::cout << "!!! 壁なので進めません。" << std::endl;
     result = {position.x, position.y};
   }
@@ -70,20 +78,20 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vect
     case 'a':
       vs.s1_speed++;
       vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
-      vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline);
+      vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline, vs.player_position, map);
       break;
 
     case 'b':
       if (vs.s1_speed > 0) {
         vs.s1_speed--;
         vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
-        vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline);
+        vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline, vs.player_position, map);
       }
       break;
 
     case 'g':
       vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
-      vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline);
+      vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline, vs.player_position, map);
       break;
 
     case 's':

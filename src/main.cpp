@@ -11,13 +11,11 @@ void VdInitvehicleState(VehicleState& vehicle_state) {
   vehicle_state.direction = "↑";
 }
 
-bool isGoalReached(const std::vector<std::vector<char>>& map, const int size_h, const Position& position) {
+bool isGoalReached(const std::vector<std::vector<char>>& map, const Position& position) {
   // プレイヤーの位置がゴールであるかをチェックする
   if (map[position.y - 1][position.x] == 'G') {
     return true;
   }
-
-  std::cout << map[position.y][position.x] << std::endl;
 
   return false;
 }
@@ -51,7 +49,7 @@ int main() {
     Display::VdShowMap(map, vehicle_state.player_position);
 
     // ゴール判定
-    bool fg_is_goal = isGoalReached(map, map[0].size(), vehicle_state.player_position);
+    bool fg_is_goal = isGoalReached(map, vehicle_state.player_position);
     // ガス欠判定
     bool fg_out_of_fual = isOutOfFual(vehicle_state.s1_gasoline);
 

@@ -7,14 +7,25 @@
 void VdInitvehicleState(VehicleState& vehicle_state) {
   vehicle_state.u1_gasoline = 10;
   vehicle_state.u1_speed = 0;
-  vehicle_state.player_position = {0, 0};
+  vehicle_state.player_position = {1, 1};
   vehicle_state.direction = "North";
+}
+
+bool isGoalReached(const std::vector<std::vector<char>>& map, const Position& position) {
+  // プレイヤーの位置がゴールであるかをチェックする
+  if (map[map.size() - 1 - position.y][position.x] == 'g') {
+    return true;
+  }
+
+  return false;
 }
 
 int main() {
   VehicleState vehicle_state;
   char command;
   VdInitvehicleState(vehicle_state);
+
+  std::vector<std::vector<char>> map = RoadMap::VdGenerateMap();
 
   while (true) {
     // 現在の状態を表示
@@ -37,12 +48,17 @@ int main() {
       break;
     }
 
+    // ゴール判定
+    bool fg_is_goal = isGoalReached(RoadMap::VdGenerateMap(), vehicle_state.player_position);
+    if (fg_is_goal) {
+      std::cout << "GAME CLEAR!!" << std::endl;
+      break;
+    }
+
     if (command == 'q') {
       break;
     }
   }
-
-  // std::cout << "Game over. Final distance: " << GameState.distance << " meters" << std::endl;
 
   return 0;
 }

@@ -36,21 +36,16 @@ std::string ChangeDirectionRight(const std::string& d) {
   return result;
 }
 
-void VdUpdatePosition(const char& command, VehicleState& vs) {
-  if ((command != 'l' && command != 'r') && vs.u1_gasoline > 0.0f) {
-    if (vs.direction == "North") {
-      vs.player_position.y += vs.u1_speed;
-    } else if (vs.direction == "East") {
-      vs.player_position.x += vs.u1_speed;
-    } else if (vs.direction == "South") {
-      vs.player_position.y -= vs.u1_speed;
-    } else if (vs.direction == "West") {
-      vs.player_position.x -= vs.u1_speed;
-    }
-  }
-}
-
 int U1UpdateGasoline(const int u1_speed, const int u1_gasoline) { return std::max(u1_gasoline - u1_speed, 0); }
+
+bool isGoalReached(const std::vector<std::vector<char>>& map, const Position& position) {
+  // プレイヤーの位置がゴールであるかをチェックする
+  if (map[position.y][map.size() - 1 - position.x] == 'g') {
+    return true;
+  }
+
+  return false;
+}
 
 Position UpdatePosition(const Position& position, std::string direction, const int u1_speed) {
   Position result = {position.x, position.y};
@@ -64,6 +59,20 @@ Position UpdatePosition(const Position& position, std::string direction, const i
   } else if (direction == "West") {
     result.x = position.x - u1_speed;
   }
+
+  // ゴール判定
+  bool fg_is_goal = isGoalReached(RoadMap::VdGenerateMap(), result);
+  if (fg_is_goal) {
+    std::cout << "クリア！。" << std::endl;
+  }
+
+  // 移動先が壁だったら位置を更新しない
+  std::vector<std::vector<char>> map = RoadMap::VdGenerateMap();
+  if (map[result.y][map.size() - 1 - result.x] == '#') {
+    std::cout << "壁なので進めません。" << std::endl;
+    result = {position.x, position.y};
+  }
+  std::cout << "Curent" << map[result.y][map.size() - 1 - result.x] << std::endl;
 
   return result;
 }

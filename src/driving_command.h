@@ -9,5 +9,5 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vect
 }
 
 namespace Display {
-void VdShowMap(const std::vector<std::vector<char>>& map, const Position& player_position);
+void VdShowMap(const std::vector<std::vector<char>>& map, const VehicleState& vehicle_state);
 }

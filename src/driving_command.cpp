@@ -5,7 +5,6 @@
 #include <vector>
 
 namespace DrivingCommand {
-
 std::string ChangeDirectionLeft(const std::string& d) {
   std::string result;
   if (d == "↑") {
@@ -36,66 +35,60 @@ std::string ChangeDirectionRight(const std::string& d) {
   return result;
 }
 
-int UpdateGasoline(const int s1_speed, const int s1_gasoline, const Position& position,
-                   const std::vector<std::vector<char>>& map) {
-  int result = std::max(s1_gasoline - s1_speed, 0);
-  // ガソリン補充
-  if (map[map.size() - 1 - position.y][position.x] == 'F') {
-    std::cout << "給油完了" << std::endl;
-    result = 100;
+void UpdatePosition(const std::vector<std::vector<char>>& map, VehicleState& vs) {
+  Position result_tmp = vs.player_position;
+  int distance_current_step = 0;
+  for (auto i = 0; i < vs.speed; i++) {
+    if (vs.direction == "↑") {
+      result_tmp.y -= 1;
+    } else if (vs.direction == "→") {
+      result_tmp.x += 1;
+    } else if (vs.direction == "↓") {
+      result_tmp.y += 1;
+    } else if (vs.direction == "←") {
+      result_tmp.x -= 1;
+    }
+    std::cout << "Y:" << result_tmp.y << ", X:" << result_tmp.x << std::endl;
+    if (result_tmp.y >= map.size() - 1 || result_tmp.x >= map[0].size() - 1) {
+      std::cout << "!!! 領域外なので進めません。" << std::endl;
+    } else if (map[result_tmp.y][result_tmp.x] == '+') {
+      std::cout << "!!! 壁なので進めません。" << std::endl;
+    } else {
+      // 領域外 or 壁でない とき自車位置を更新できる。
+      vs.player_position = result_tmp;
+      distance_current_step += 1;
+    }
   }
 
-  return result;
-}
-Position UpdatePosition(const Position& position, std::string direction, const int s1_speed,
-                        const std::vector<std::vector<char>>& map) {
-  Position result = {position.x, position.y};
-
-  if (direction == "↑") {
-    result.y = position.y + s1_speed;
-  } else if (direction == "→") {
-    result.x = position.x + s1_speed;
-  } else if (direction == "↓") {
-    result.y = position.y - s1_speed;
-  } else if (direction == "←") {
-    result.x = position.x - s1_speed;
+  // ガソリン更新
+  vs.fuel -= distance_current_step;
+  if (vs.fuel < 0) {
+    vs.fuel = 0;
   }
 
-  if (result.x >= map[0].size() - 1 || result.y >= map.size() - 1) {
-    std::cout << "!!! 領域外なので進めません。" << std::endl;
-    result = {position.x, position.y};
-  } else if (map[map.size() - 1 - result.y][result.x] == '#') {
-    //  途中に壁があっても進めないようにする。
-    std::cout << "!!! 壁なので進めません。" << std::endl;
-    result = {position.x, position.y};
-  }
-
-  return result;
+  return;
 }
 
 void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vector<std::vector<char>>& map) {
   switch (command) {
     case 'a':
-      vs.s1_speed++;
-      vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
-      vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline, vs.player_position, map);
+      vs.speed = std::min(vs.speed + 1, vs.speed_limit);
+      UpdatePosition(map, vs);
       break;
 
     case 'b':
-      if (vs.s1_speed > 0) {
-        vs.s1_speed--;
-        vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
-        vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline, vs.player_position, map);
+      if (vs.speed > 0) {
+        vs.speed--;
+        UpdatePosition(map, vs);
       }
       break;
 
     case 'g':
-      vs.player_position = UpdatePosition(vs.player_position, vs.direction, vs.s1_speed, map);
-      vs.s1_gasoline = UpdateGasoline(vs.s1_speed, vs.s1_gasoline, vs.player_position, map);
+      UpdatePosition(map, vs);
       break;
 
     case 's':
-      vs.s1_speed = 0;
+      vs.speed = 0;
       break;
 
     case 'l':
@@ -111,14 +104,12 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vect
 }
 
 }  // namespace DrivingCommand
-
 namespace Display {
-void VdShowMap(const std::vector<std::vector<char>>& map, const Position& player_position) {
-  std::cout << "▼▼▼ MAP (E: 自車位置, G: ゴール) ▼▼▼" << std::endl;
+void VdShowMap(const std::vector<std::vector<char>>& map, const VehicleState& vehicle_state) {
   for (int i = 0; i < map.size(); i++) {
     for (int j = 0; j < map[i].size(); j++) {
-      if (player_position.x == j && player_position.y == (map.size() - 1 - i)) {
-        std::cout << "E ";
+      if (vehicle_state.player_position.x == j && vehicle_state.player_position.y == i) {
+        std::cout << vehicle_state.direction << " ";
       } else {
         std::cout << map[i][j] << " ";
       }

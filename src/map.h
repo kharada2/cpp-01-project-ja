@@ -1,5 +1,5 @@
 #include <vector>
 
 namespace RoadMap {
-std::vector<std::vector<char>> VdGenerateMap();
+std::vector<std::vector<char>> GenerateMap();
 }

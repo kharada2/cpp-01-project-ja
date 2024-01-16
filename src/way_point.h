@@ -5,5 +5,7 @@
 #include "struct_def.h"
 
 namespace WayPoint {
-bool WayPointCheck(const std::vector<std::vector<char>>& map, VehicleState& vehicle_state);
-}
+bool WayPointCheck(const std::vector<std::vector<char>>& map, VehicleState& vehicle_state, const char& command);
+Position DistanceToLandMark(const std::vector<std::vector<char>>& map, const char landmark,
+                            const VehicleState& vehicle_state);
+}  // namespace WayPoint

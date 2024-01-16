@@ -11,6 +11,7 @@ typedef struct {
 
 typedef struct {
   Position player_position;
+  Position player_position_pre;
   std::string direction;
   int speed;  // [m/s]
   int fuel;   // [%]

@@ -7,14 +7,14 @@
 namespace DrivingCommand {
 std::string ChangeDirectionLeft(const std::string& d) {
   std::string result;
-  if (d == "↑") {
-    result = "←";
-  } else if (d == "←") {
-    result = "↓";
-  } else if (d == "↓") {
-    result = "→";
+  if (d == "NOTRH") {
+    result = "WEST";
+  } else if (d == "WEST") {
+    result = "SOUTH";
+  } else if (d == "SOUTH") {
+    result = "EAST";
   } else {
-    result = "↑";
+    result = "NOTRH";
   }
 
   return result;
@@ -23,14 +23,29 @@ std::string ChangeDirectionLeft(const std::string& d) {
 std::string ChangeDirectionRight(const std::string& d) {
   std::string result;
 
-  if (d == "↑") {
-    result = "→";
-  } else if (d == "→") {
-    result = "↓";
-  } else if (d == "↓") {
-    result = "←";
+  if (d == "NOTRH") {
+    result = "EAST";
+  } else if (d == "EAST") {
+    result = "SOUTH";
+  } else if (d == "SOUTH") {
+    result = "WEST";
   } else {
-    result = "↑";
+    result = "NOTRH";
+  }
+  return result;
+}
+
+std::string ChangeDirectionUturn(const std::string& d) {
+  std::string result;
+
+  if (d == "NOTRH") {
+    result = "SOUTH";
+  } else if (d == "EAST") {
+    result = "WEST";
+  } else if (d == "NOTRH") {
+    result = "WEST";
+  } else {
+    result = "EAST";
   }
   return result;
 }
@@ -39,19 +54,19 @@ void UpdatePosition(const std::vector<std::vector<char>>& map, VehicleState& vs)
   Position result_tmp = vs.player_position;
   int distance_current_step = 0;
   for (auto i = 0; i < vs.speed; i++) {
-    if (vs.direction == "↑") {
+    if (vs.direction == "NOTRH") {
       result_tmp.y -= 1;
-    } else if (vs.direction == "→") {
+    } else if (vs.direction == "EAST") {
       result_tmp.x += 1;
-    } else if (vs.direction == "↓") {
+    } else if (vs.direction == "SOUTH") {
       result_tmp.y += 1;
-    } else if (vs.direction == "←") {
+    } else if (vs.direction == "WEST") {
       result_tmp.x -= 1;
     }
     std::cout << "Y:" << result_tmp.y << ", X:" << result_tmp.x << std::endl;
     if (result_tmp.y >= map.size() - 1 || result_tmp.x >= map[0].size() - 1) {
       std::cout << "!!! 領域外なので進めません。" << std::endl;
-    } else if (map[result_tmp.y][result_tmp.x] == '+') {
+    } else if (map[result_tmp.y][result_tmp.x] == '*') {
       std::cout << "!!! 壁なので進めません。" << std::endl;
     } else {
       // 領域外 or 壁でない とき自車位置を更新できる。
@@ -70,12 +85,12 @@ void UpdatePosition(const std::vector<std::vector<char>>& map, VehicleState& vs)
 }
 
 void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vector<std::vector<char>>& map) {
+  Position result_tmp = vs.player_position;
   switch (command) {
     case 'a':
       vs.speed = std::min(vs.speed + 1, vs.speed_limit);
       UpdatePosition(map, vs);
       break;
-
     case 'b':
       if (vs.speed > 0) {
         vs.speed--;
@@ -92,29 +107,60 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vect
       break;
 
     case 'l':
-      vs.direction = ChangeDirectionLeft(vs.direction);
+
+      if (vs.direction == "NOTRH") {
+        result_tmp.x -= 1;
+      } else if (vs.direction == "EAST") {
+        result_tmp.y -= 1;
+      } else if (vs.direction == "SOUTH") {
+        result_tmp.x += 1;
+      } else if (vs.direction == "WEST") {
+        result_tmp.y += 1;
+      }
+      if (map[result_tmp.y][result_tmp.x] == '*') {
+        std::cout << "壁なので左折できません" << std::endl;
+      } else {
+        vs.direction = ChangeDirectionLeft(vs.direction);
+      }
+
       break;
 
     case 'r':
-      vs.direction = ChangeDirectionRight(vs.direction);
+
+      if (vs.direction == "NOTRH") {
+        result_tmp.x += 1;
+      } else if (vs.direction == "EAST") {
+        result_tmp.y += 1;
+      } else if (vs.direction == "SOUTH") {
+        result_tmp.x -= 1;
+      } else if (vs.direction == "WEST") {
+        result_tmp.y -= 1;
+      }
+      if (map[result_tmp.y][result_tmp.x] == '*') {
+        std::cout << "壁なので右折できません" << std::endl;
+      } else {
+        vs.direction = ChangeDirectionRight(vs.direction);
+      }
+      break;
+
+    case 'u':
+      if (vs.direction == "NOTRH") {
+        result_tmp.y += 1;
+      } else if (vs.direction == "EAST") {
+        result_tmp.x -= 1;
+      } else if (vs.direction == "SOUTH") {
+        result_tmp.y -= 1;
+      } else if (vs.direction == "WEST") {
+        result_tmp.x += 1;
+      }
+      if (map[result_tmp.y][result_tmp.x] == '*') {
+        std::cout << "壁なのでUターンできません" << std::endl;
+      } else {
+        vs.direction = ChangeDirectionUturn(vs.direction);
+      }
       break;
   }
 
   return;
 }
-
 }  // namespace DrivingCommand
-namespace Display {
-void VdShowMap(const std::vector<std::vector<char>>& map, const VehicleState& vehicle_state) {
-  for (int i = 0; i < map.size(); i++) {
-    for (int j = 0; j < map[i].size(); j++) {
-      if (vehicle_state.player_position.x == j && vehicle_state.player_position.y == i) {
-        std::cout << vehicle_state.direction << " ";
-      } else {
-        std::cout << map[i][j] << " ";
-      }
-    }
-    std::cout << std::endl;
-  }
-}
-}  // namespace Display

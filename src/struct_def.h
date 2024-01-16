@@ -17,6 +17,7 @@ typedef struct {
   int time;
   int money;
   int speed_limit;
+  int fuel_count;
 } VehicleState;
 
 #endif

@@ -7,7 +7,3 @@
 namespace DrivingCommand {
 void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vector<std::vector<char>>& map);
 }
-
-namespace Display {
-void VdShowMap(const std::vector<std::vector<char>>& map, const VehicleState& vehicle_state);
-}

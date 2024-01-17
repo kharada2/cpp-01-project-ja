@@ -2,48 +2,53 @@
 
 #include <iostream>
 
+#include "define_const.h"
+
 namespace WayPoint {
-bool WayPointCheck(const std::vector<std::vector<char>>& map, VehicleState& vehicle_state, const char& command) {
+void WayPointCheck(const std::vector<std::vector<char>>& map, VehicleState& vehicle_state, const char& command) {
   const char way_point = map[vehicle_state.player_position.y][vehicle_state.player_position.x];
 
   switch (way_point) {
     case 'G':  // 目的地
-      return true;
+      vehicle_state.is_goal = true;
+      break;
 
     case 'F':  // ガソリンスタンド
       std::cout << command << std::endl;
       if (vehicle_state.fuel_count > 0 && (vehicle_state.player_position.x != vehicle_state.player_position_pre.x ||
                                            vehicle_state.player_position.y != vehicle_state.player_position_pre.y)) {
-        std::cout << "ガソリンスタンドです。10リットル給油できます。給油しますか？ YES:y, NO:n" << std::endl;
+        std::cout << "GAS STATION. CAN REFUEL 10. DO YOU WANT TO REFUEL?  YES:y, NO:n" << std::endl;
         char c;
         std::cin >> c;
         if (c = 'y') {
-          vehicle_state.fuel += 20;
+          vehicle_state.fuel = std::min(vehicle_state.fuel + FUEL_CHARGE, FUEL_MAX);
           vehicle_state.fuel_count -= 1;
-          std::cout << "給油後の燃料は" << vehicle_state.fuel << "です。" << std::endl;
+          std::cout << "FUEL BECOMES " << vehicle_state.fuel << std::endl;
         } else {
-          std::cout << "給油回数が上限に達しているので、給油できません。" << std::endl;
+          std::cout << "THE NUMBER OF REFUELS HAS REACHED THE LIMIT, CANNOT REFUEL." << std::endl;
         }
       }
       break;
 
     case 'H':  // 高速道路
       if (vehicle_state.speed_limit == 1) {
-        std::cout << "高速道路です。【速度制限２】" << std::endl;
-        vehicle_state.speed_limit = 2;
+        std::cout << "HIGHWAY" << std::endl;
+        std::cout << "SPEED LIMIT BECOMES " << SPEED_HIGHWAY << "." << std::endl;
+        vehicle_state.speed_limit = SPEED_HIGHWAY;
       }
       break;
 
     default:
-      if (vehicle_state.speed_limit == 2) {
-        std::cout << "高速道路を降りました。【速度制限１】" << std::endl;
-        vehicle_state.speed_limit = 1;
-        vehicle_state.speed = 1;
+      if (vehicle_state.speed_limit == SPEED_MAX) {
+        vehicle_state.speed_limit = SPEED_NORMAL;
+        vehicle_state.speed = SPEED_NORMAL;
+        std::cout << "EXIT HIGHWAY" << std::endl;
+        std::cout << "SPEED LIMIT BECOMES " << vehicle_state.speed_limit << "." << std::endl;
       }
       break;
   }
 
-  return false;
+  return;
 }
 
 Position DistanceToLandMark(const std::vector<std::vector<char>>& map, const char landmark,

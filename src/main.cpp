@@ -4,18 +4,21 @@
 #include <string>
 #include <vector>
 
+#include "define_const.h"
 #include "display.h"
 #include "driving_command.h"
 #include "way_point.h"
+
 void VdInitvehicleState(int map_size, VehicleState& vehicle_state) {
-  vehicle_state.fuel = 20;
+  vehicle_state.fuel = FUEL_MAX;
   vehicle_state.speed = 0;
   vehicle_state.player_position = {2, map_size - 3};      // x, y
   vehicle_state.player_position_pre = {1, map_size - 3};  // x, y
   vehicle_state.direction = "NOTRH";
-  vehicle_state.time = 100;
-  vehicle_state.fuel_count = 2;
+  vehicle_state.time = START_TIME;
+  vehicle_state.fuel_count = FUEL_CHARGE_MAX;
   vehicle_state.speed_limit = 1;
+  vehicle_state.is_goal = false;
 }
 
 bool isOutOfFual(const int fuel) { return fuel == 0; }
@@ -29,7 +32,7 @@ int main() {
   VdInitvehicleState(map.size(), vehicle_state);
 
   std::cout << "####### GAME START #######" << std::endl;
-  std::cout << "'a(加速)'を押して走行を開始してください。" << std::endl;
+  std::cout << "'PRESS 'a' TO START. " << std::endl;
   while (true) {
     // コマンド入力
     char command;
@@ -45,26 +48,10 @@ int main() {
     Display::DisplayStatus(map, vehicle_state);
 
     // ランドマークチェック
-    bool fg_is_goal = WayPoint::WayPointCheck(map, vehicle_state, command);
+    WayPoint::WayPointCheck(map, vehicle_state, command);
 
     // map表示
     Display::ShowDriverView(map, vehicle_state);
-
-    // ゲーム終了判定
-    if (fg_is_goal) {
-      std::cout << "####### GAME CLEAR!! ####" << std::endl;
-      std::cout << "YOUR SCORE IS: " << vehicle_state.time + vehicle_state.fuel_count * 10 << std::endl;
-      break;
-    } else if (vehicle_state.fuel == 0) {
-      std::cout << "GAME OVER!! ガソリンが無くなりました。" << std::endl;
-      break;
-    } else if (vehicle_state.time <= 0) {
-      std::cout << "TIMEOVER!!" << std::endl;
-      break;
-    } else if (command == 'q') {
-      std::cout << "####### GAME ABORT #########" << std::endl;
-      break;
-    }
 
     // 時間更新
     vehicle_state.time--;
@@ -72,6 +59,11 @@ int main() {
     // 現在位置情報保存
     vehicle_state.player_position_pre = vehicle_state.player_position;
     std::cout << std::endl;
+
+    // ゲーム終了判定
+    if (DrivingCommand::GameEndJdg(command, vehicle_state)) {
+      break;
+    }
   }
 
   return 0;

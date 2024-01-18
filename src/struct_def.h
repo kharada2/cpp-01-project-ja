@@ -19,7 +19,10 @@ typedef struct {
   int money;
   int speed_limit;
   int fuel_count;
+  int one_step_dist;
   bool is_goal;
+  bool is_snow;
+  bool is_rain;
 } VehicleState;
 
 #endif

@@ -1,6 +1,7 @@
 #include "driving_command.h"
 
 #include <iostream>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -85,7 +86,7 @@ void UpdatePosition(const std::vector<std::vector<char>>& map, VehicleState& vs)
   return;
 }
 
-void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vector<std::vector<char>>& map) {
+void UpdateDrivingState(const char& command, VehicleState& vs, const std::vector<std::vector<char>>& map) {
   Position result_tmp = vs.player_position;
   switch (command) {
     case 'a':  // 加速
@@ -108,7 +109,6 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vect
       break;
 
     case 'l':  // 左折
-
       if (vs.direction == "NOTRH") {
         result_tmp.x -= 1;
       } else if (vs.direction == "EAST") {
@@ -123,12 +123,12 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vect
         std::cout << "CANNOT TURN LEFT" << std::endl;
       } else {
         vs.direction = ChangeDirectionLeft(vs.direction);
+        vs.player_position = {result_tmp.x, result_tmp.y};
       }
 
       break;
 
     case 'r':  // 右折
-
       if (vs.direction == "NOTRH") {
         result_tmp.x += 1;
       } else if (vs.direction == "EAST") {
@@ -143,6 +143,7 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vect
         std::cout << "CANNOT TURN RIGHT" << std::endl;
       } else {
         vs.direction = ChangeDirectionRight(vs.direction);
+        vs.player_position = {result_tmp.x, result_tmp.y};
       }
       break;
 
@@ -161,6 +162,7 @@ void VdUpdateDrivingState(const char& command, VehicleState& vs, const std::vect
         std::cout << "CANNOT DO A U-TURN" << std::endl;
       } else {
         vs.direction = ChangeDirectionUturn(vs.direction);
+        vs.player_position = {result_tmp.x, result_tmp.y};
       }
       break;
 
@@ -206,3 +208,22 @@ void CheckRule(VehicleState& vs) {
   }
 }
 }  // namespace Score
+
+namespace Weather {
+void UpdateWeather(VehicleState& vs) {
+  float f_rand = std::rand() / 2147483647.0;
+  if (vs.is_snow) {
+    // 雪が降っている
+    if (f_rand < SHOW_STOP) {
+      // 雪がやむ
+      vs.is_snow = false;
+    }
+  } else {
+    // 雪が降っていない
+    if (f_rand < SHOW_POSSIBILYTY) {
+      // 雪が降り始める
+      vs.is_snow = true;
+    }
+  }
+}
+}  // namespace Weather

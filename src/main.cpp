@@ -19,6 +19,9 @@ void VdInitvehicleState(int map_size, VehicleState& vehicle_state) {
   vehicle_state.fuel_count = FUEL_CHARGE_MAX;
   vehicle_state.speed_limit = 1;
   vehicle_state.is_goal = false;
+  vehicle_state.one_step_dist = 1;
+  vehicle_state.is_rain = false;
+  vehicle_state.is_snow = false;
 }
 
 bool isOutOfFual(const int fuel) { return fuel == 0; }
@@ -38,8 +41,11 @@ int main() {
     char command;
     std::cin >> command;
 
+    // 天気更新
+    Weather::UpdateWeather(vehicle_state);
+
     // 車両状態更新
-    DrivingCommand::VdUpdateDrivingState(command, vehicle_state, map);
+    DrivingCommand::UpdateDrivingState(command, vehicle_state, map);
 
     // ルール違反チェック
     Score::CheckRule(vehicle_state);

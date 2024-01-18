@@ -7,14 +7,35 @@
 #include "way_point.h"
 
 namespace Display {
-std::string ReplaceCharToStringForViewer(char in) {
+std::string WeatherJudge(const VehicleState& vehicle_state) {
+  std::string result = "SUNNY";
+  if (vehicle_state.is_snow) {
+    std::cout << "SHOW " << std::endl;
+    std::string result = "SNOW";
+  }
+
+  return result;
+}
+
+std::string ReplaceCharToStringForViewer(char in, const VehicleState& vehicle_state) {
   std::string out = "   ";
+
   if (in == '#') {
     out = DIAPLAY_EMPTY;
   } else if (in == 'H') {
-    out = " ◇ ";
+    out = DIAPLAY_HIGHWAY;
   } else if (in == 'F') {
-    out = " F ";
+    out = DIAPLAY_GAS_STATION;
+  } else if (in == 'G') {
+    out = DIAPLAY_GOAL;
+  } else if (in == 'C') {
+    out = DIAPLAY_CONVINI;
+  } else if (in == ' ') {
+    out = DIAPLAY_ROAD;
+  }
+
+  if (vehicle_state.is_snow) {
+    out = DIAPLAY_ROAD;
   }
 
   return out;
@@ -43,7 +64,7 @@ void ShowDriverView(const std::vector<std::vector<char>>& map, const VehicleStat
           std::cout << DIAPLAY_EGO_CAR;
         } else if (std::abs(vehicle_state.player_position.x - x) <= DISPLAY_RANGE &&
                    std::abs(vehicle_state.player_position.y - y) <= DISPLAY_RANGE) {
-          std::cout << ReplaceCharToStringForViewer(map[y][x]);
+          std::cout << ReplaceCharToStringForViewer(map[y][x], vehicle_state);
           align = true;
         } else {
           // nothing
@@ -61,7 +82,7 @@ void ShowDriverView(const std::vector<std::vector<char>>& map, const VehicleStat
           std::cout << DIAPLAY_EGO_CAR;
         } else if (std::abs(vehicle_state.player_position.x - x) <= DISPLAY_RANGE &&
                    std::abs(vehicle_state.player_position.y - y) <= DISPLAY_RANGE) {
-          std::cout << ReplaceCharToStringForViewer(map[y][x]);
+          std::cout << ReplaceCharToStringForViewer(map[y][x], vehicle_state);
           align = true;
         } else {
           // nothing
@@ -79,7 +100,7 @@ void ShowDriverView(const std::vector<std::vector<char>>& map, const VehicleStat
           std::cout << DIAPLAY_EGO_CAR;
         } else if (std::abs(vehicle_state.player_position.x - x) <= DISPLAY_RANGE &&
                    std::abs(vehicle_state.player_position.y - y) <= DISPLAY_RANGE) {
-          std::cout << ReplaceCharToStringForViewer(map[y][x]);
+          std::cout << ReplaceCharToStringForViewer(map[y][x], vehicle_state);
           align = true;
         } else {
           // nothing
@@ -97,7 +118,7 @@ void ShowDriverView(const std::vector<std::vector<char>>& map, const VehicleStat
           std::cout << DIAPLAY_EGO_CAR;
         } else if (std::abs(vehicle_state.player_position.x - x) <= DISPLAY_RANGE &&
                    std::abs(vehicle_state.player_position.y - y) <= DISPLAY_RANGE) {
-          std::cout << ReplaceCharToStringForViewer(map[y][x]);
+          std::cout << ReplaceCharToStringForViewer(map[y][x], vehicle_state);
           align = true;
         } else {
           // nothing
@@ -109,6 +130,7 @@ void ShowDriverView(const std::vector<std::vector<char>>& map, const VehicleStat
     }
   }
   std::cout << "SPEED LIMIT :  " << vehicle_state.speed_limit << std::endl;
+  std::cout << "WEATHER     :  " << WeatherJudge(vehicle_state) << std::endl;
 }
 
 void DisplayStatus(const std::vector<std::vector<char>>& map, const VehicleState& vehicle_state) {
@@ -116,25 +138,13 @@ void DisplayStatus(const std::vector<std::vector<char>>& map, const VehicleState
   std::cout << "| TIME         | " << vehicle_state.time << std::endl;
   std::cout << "| SPEED        | " << vehicle_state.speed << std::endl;
   std::cout << "| FUEL         | " << vehicle_state.fuel << std::endl;
-  std::cout << "| REFUEL COUNT | " << vehicle_state.fuel_count << std::endl;
-  std::cout << "| DIRECTION    | " << vehicle_state.direction << std::endl;
+  // std::cout << "| DIRECTION    | " << vehicle_state.direction << std::endl;
   std::cout << "| DIST TO GOAL | "
             << std::abs(WayPoint::DistanceToLandMark(map, 'G', vehicle_state).y) +
                    std::abs(WayPoint::DistanceToLandMark(map, 'G', vehicle_state).x)
             << std::endl;
   std::cout << "-------------------------" << std::endl;
   std::cout << std::endl;
-
-  // std::cout << "【自車状態】 TIME:" << vehicle_state.time << ", "
-  //           << "速度:" << vehicle_state.speed << "("
-  //           << "制限速度:" << vehicle_state.speed_limit << ")  "
-  //           << "燃料:" << vehicle_state.fuel << "("
-  //           << "給油残り回数 :" << vehicle_state.fuel_count << ")  " << std::endl;
-  // std::cout << "【参考情報】前方方角:" << vehicle_state.direction << ", "
-  //           << "目的地までの距離:"
-  //           << std::abs(WayPoint::DistanceToLandMark(map, 'G', vehicle_state).y) +
-  //                  std::abs(WayPoint::DistanceToLandMark(map, 'G', vehicle_state).x)
-  //           << std::endl;
 }
 
 }  // namespace Display

@@ -38,6 +38,10 @@ void WayPointCheck(const std::vector<std::vector<char>>& map, VehicleState& vehi
       }
       break;
 
+    case 'C':  // コンビニ
+      std::cout << "ARRIVED CONVENIENCE STORE. TAKE A REST. " << std::endl;
+      break;
+
     default:
       if (vehicle_state.speed_limit == SPEED_MAX) {
         vehicle_state.speed_limit = SPEED_NORMAL;

@@ -69,10 +69,8 @@ void UpdatePosition(const std::vector<std::vector<char>>& map, VehicleState& vs)
       result_tmp.x -= 1;
     }
     if (result_tmp.y >= map.size() - 1 || result_tmp.x >= map[0].size() - 1) {
-      // std::cout << "!!! CANNOT PROCEED. OUT OF ROAD." << std::endl;
       vs.is_accident = true;
     } else if (map[result_tmp.y][result_tmp.x] == '#') {
-      // std::cout << "!!! CANNOT PROCEED." << std::endl;
       vs.is_accident = true;
     } else {
       // 領域外 or 壁でない とき自車位置を更新できる。

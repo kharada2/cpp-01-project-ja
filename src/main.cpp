@@ -33,12 +33,13 @@ int main() {
   InitvehicleState(map.size(), vehicle_state);
 
   std::cout << "####### GAME START #######" << std::endl;
-  std::cout << "'PRESS [a] TO START. " << std::endl;
+  std::cout << "PRESS [a] TO START. " << std::endl;
   while (true) {
     // コマンド入力
     char command;
-    std::cout << "[a]: ACCEL, [b]:BLAKE, [g]:GO_STRAIGHT, [s]:STOP, [r]:TURN_RIGHT, [l]:TURN_LEFT, [u]:U_TURN "
-              << std::endl;
+    std::cout
+        << "[a]:ACCEL, [b]:BLAKE, [g]:GO_STRAIGHT, [s]:STOP, [r]:TURN_RIGHT, [l]:TURN_LEFT, [u]:U_TURN, [q]:QUIT_GAME "
+        << std::endl;
 
     std::cin >> command;
 

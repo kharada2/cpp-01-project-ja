@@ -7,11 +7,10 @@
 #include "way_point.h"
 
 namespace Display {
-std::string WeatherJudge(const VehicleState& vehicle_state) {
+std::string WeatherToString(const VehicleState& vehicle_state) {
   std::string result = "SUNNY";
-  if (vehicle_state.is_snow) {
-    std::cout << "SHOW " << std::endl;
-    std::string result = "SNOW";
+  if (vehicle_state.weather == SNOW) {
+    result = "SNOW";
   }
 
   return result;
@@ -34,7 +33,7 @@ std::string ReplaceCharToStringForViewer(char in, const VehicleState& vehicle_st
     out = DIAPLAY_ROAD;
   }
 
-  if (vehicle_state.is_snow) {
+  if (vehicle_state.weather == SNOW) {
     out = DIAPLAY_ROAD;
   }
 
@@ -129,21 +128,35 @@ void ShowDriverView(const std::vector<std::vector<char>>& map, const VehicleStat
       }
     }
   }
-  std::cout << "SPEED LIMIT :  " << vehicle_state.speed_limit << std::endl;
-  std::cout << "WEATHER     :  " << WeatherJudge(vehicle_state) << std::endl;
+}
+
+void DiplayFuel(int fuel) {
+  int scale_fuel = (static_cast<double>(fuel) / FUEL_MAX) * 10;  // 割合(0~5)
+  std::cout << "| FUEL         | ";
+  for (int i = 0; i < 9; i++) {
+    if (i < scale_fuel) {
+      std::cout << "▮";
+    } else {
+      std::cout << "▯";
+    }
+  }
+  std::cout << std::endl;
 }
 
 void DisplayStatus(const std::vector<std::vector<char>>& map, const VehicleState& vehicle_state) {
-  std::cout << "-------------------------" << std::endl;
+  std::cout << "---------------------------------" << std::endl;
   std::cout << "| TIME         | " << vehicle_state.time << std::endl;
-  std::cout << "| SPEED        | " << vehicle_state.speed << std::endl;
-  std::cout << "| FUEL         | " << vehicle_state.fuel << std::endl;
+  std::cout << "| SPEED        | " << vehicle_state.speed << " ( SPEED_LIMIT: " << vehicle_state.speed_limit << " )"
+            << std::endl;
+  // std::cout << "| FUEL         | " << vehicle_state.fuel << std::endl;
+  DiplayFuel(vehicle_state.fuel);
   // std::cout << "| DIRECTION    | " << vehicle_state.direction << std::endl;
+  std::cout << "| WEATHER      | " << WeatherToString(vehicle_state) << std::endl;
   std::cout << "| DIST TO GOAL | "
             << std::abs(WayPoint::DistanceToLandMark(map, 'G', vehicle_state).y) +
                    std::abs(WayPoint::DistanceToLandMark(map, 'G', vehicle_state).x)
             << std::endl;
-  std::cout << "-------------------------" << std::endl;
+  std::cout << "---------------------------------" << std::endl;
   std::cout << std::endl;
 }
 

@@ -9,7 +9,7 @@
 #include "driving_command.h"
 #include "way_point.h"
 
-void VdInitvehicleState(int map_size, VehicleState& vehicle_state) {
+void InitvehicleState(int map_size, VehicleState& vehicle_state) {
   vehicle_state.fuel = FUEL_MAX;
   vehicle_state.speed = 0;
   vehicle_state.player_position = {2, map_size - 3};      // x, y
@@ -20,11 +20,9 @@ void VdInitvehicleState(int map_size, VehicleState& vehicle_state) {
   vehicle_state.speed_limit = 1;
   vehicle_state.is_goal = false;
   vehicle_state.one_step_dist = 1;
-  vehicle_state.is_rain = false;
-  vehicle_state.is_snow = false;
+  vehicle_state.weather = SUNNY;
+  vehicle_state.is_accident = false;
 }
-
-bool isOutOfFual(const int fuel) { return fuel == 0; }
 
 int main() {
   // 変数宣言
@@ -32,13 +30,16 @@ int main() {
   std::vector<std::vector<char>> map = RoadMap::GenerateMap();
 
   // 自車状態初期化
-  VdInitvehicleState(map.size(), vehicle_state);
+  InitvehicleState(map.size(), vehicle_state);
 
   std::cout << "####### GAME START #######" << std::endl;
-  std::cout << "'PRESS 'a' TO START. " << std::endl;
+  std::cout << "'PRESS [a] TO START. " << std::endl;
   while (true) {
     // コマンド入力
     char command;
+    std::cout << "[a]: ACCEL, [b]:BLAKE, [g]:GO_STRAIGHT, [s]:STOP, [r]:TURN_RIGHT, [l]:TURN_LEFT, [u]:U_TURN "
+              << std::endl;
+
     std::cin >> command;
 
     // 天気更新
@@ -50,11 +51,11 @@ int main() {
     // ルール違反チェック
     Score::CheckRule(vehicle_state);
 
-    // 現在の状態を表示
-    Display::DisplayStatus(map, vehicle_state);
-
     // ランドマークチェック
     WayPoint::WayPointCheck(map, vehicle_state, command);
+
+    // 現在の状態を表示
+    Display::DisplayStatus(map, vehicle_state);
 
     // map表示
     Display::ShowDriverView(map, vehicle_state);

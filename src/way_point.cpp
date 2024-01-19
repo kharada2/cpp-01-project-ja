@@ -17,13 +17,14 @@ void WayPointCheck(const std::vector<std::vector<char>>& map, VehicleState& vehi
       std::cout << command << std::endl;
       if (vehicle_state.fuel_count > 0 && (vehicle_state.player_position.x != vehicle_state.player_position_pre.x ||
                                            vehicle_state.player_position.y != vehicle_state.player_position_pre.y)) {
-        std::cout << "GAS STATION. CAN REFUEL 10. DO YOU WANT TO REFUEL?  YES:y, NO:n" << std::endl;
+        std::cout << "GAS STATION.DO YOU WANT TO REFUEL?  [y]:YES, [n]:NO" << std::endl;
         char c;
         std::cin >> c;
         if (c = 'y') {
           vehicle_state.fuel = std::min(vehicle_state.fuel + FUEL_CHARGE, FUEL_MAX);
           vehicle_state.fuel_count -= 1;
-          std::cout << "FUEL BECOMES " << vehicle_state.fuel << std::endl;
+          std::cout << "REFUEL COMPLETED " << std::endl;
+          std::cout << "YOU CAN REFUEL " << vehicle_state.fuel_count << " MORE TIMES" << std::endl;
         } else {
           std::cout << "THE NUMBER OF REFUELS HAS REACHED THE LIMIT, CANNOT REFUEL." << std::endl;
         }

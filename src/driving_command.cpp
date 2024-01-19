@@ -1,11 +1,13 @@
 #include "driving_command.h"
 
 #include <iostream>
+#include <limits>
 #include <random>
 #include <string>
 #include <vector>
 
 #include "define_const.h"
+#include "struct_def.h"
 
 namespace DrivingCommand {
 std::string ChangeDirectionLeft(const std::string& d) {
@@ -67,9 +69,11 @@ void UpdatePosition(const std::vector<std::vector<char>>& map, VehicleState& vs)
       result_tmp.x -= 1;
     }
     if (result_tmp.y >= map.size() - 1 || result_tmp.x >= map[0].size() - 1) {
-      std::cout << "!!! CANNOT PROCEED. OUT OF ROAD." << std::endl;
+      // std::cout << "!!! CANNOT PROCEED. OUT OF ROAD." << std::endl;
+      vs.is_accident = true;
     } else if (map[result_tmp.y][result_tmp.x] == '#') {
-      std::cout << "!!! CANNOT PROCEED." << std::endl;
+      // std::cout << "!!! CANNOT PROCEED." << std::endl;
+      vs.is_accident = true;
     } else {
       // 領域外 or 壁でない とき自車位置を更新できる。
       vs.player_position = result_tmp;
@@ -119,8 +123,8 @@ void UpdateDrivingState(const char& command, VehicleState& vs, const std::vector
         result_tmp.y += 1;
       }
       if (map[result_tmp.y][result_tmp.x] == '#') {
-        // std::cout << "壁なので左折できません" << std::endl;
-        std::cout << "CANNOT TURN LEFT" << std::endl;
+        // std::cout << "CANNOT TURN LEFT" << std::endl;
+        vs.is_accident = true;
       } else {
         vs.direction = ChangeDirectionLeft(vs.direction);
         vs.player_position = {result_tmp.x, result_tmp.y};
@@ -139,8 +143,8 @@ void UpdateDrivingState(const char& command, VehicleState& vs, const std::vector
         result_tmp.y -= 1;
       }
       if (map[result_tmp.y][result_tmp.x] == '#') {
-        // std::cout << "壁なので右折できません" << std::endl;
-        std::cout << "CANNOT TURN RIGHT" << std::endl;
+        // std::cout << "CANNOT TURN RIGHT" << std::endl;
+        vs.is_accident = true;
       } else {
         vs.direction = ChangeDirectionRight(vs.direction);
         vs.player_position = {result_tmp.x, result_tmp.y};
@@ -158,8 +162,8 @@ void UpdateDrivingState(const char& command, VehicleState& vs, const std::vector
         result_tmp.x += 1;
       }
       if (map[result_tmp.y][result_tmp.x] == '#') {
-        // std::cout << "壁なのでUターンできません" << std::endl;
-        std::cout << "CANNOT DO A U-TURN" << std::endl;
+        // std::cout << "CANNOT DO A U-TURN" << std::endl;
+        vs.is_accident = true;
       } else {
         vs.direction = ChangeDirectionUturn(vs.direction);
         vs.player_position = {result_tmp.x, result_tmp.y};
@@ -181,11 +185,14 @@ bool GameEndJdg(const char& command, VehicleState& vehicle_state) {
     std::cout << "####### GAME CLEAR!! ####" << std::endl;
     std::cout << "YOUR SCORE IS: " << vehicle_state.time + vehicle_state.fuel_count * 10 << std::endl;
     result = true;
+  } else if (vehicle_state.is_accident) {
+    std::cout << "GAME OVER!! CAR CRASHED BY ACCIDENT." << std::endl;
+    result = true;
   } else if (vehicle_state.fuel == 0) {
-    std::cout << "GAME OVER!! OUT OF GASOLINE" << std::endl;
+    std::cout << "GAME OVER!! OUT OF GASOLINE." << std::endl;
     result = true;
   } else if (vehicle_state.time == 0) {
-    std::cout << "TIMEOVER!!" << std::endl;
+    std::cout << "GAME OVER!! TIMEOVER." << std::endl;
     result = true;
   } else if (command == 'q') {
     std::cout << "####### GAME ABORT #########" << std::endl;
@@ -211,18 +218,20 @@ void CheckRule(VehicleState& vs) {
 
 namespace Weather {
 void UpdateWeather(VehicleState& vs) {
-  float f_rand = std::rand() / 2147483647.0;
-  if (vs.is_snow) {
+  int max_value = std::numeric_limits<int>::max();
+  float f_rand = std::rand() / static_cast<double>(max_value);
+
+  if (vs.weather == SNOW) {
     // 雪が降っている
     if (f_rand < SHOW_STOP) {
       // 雪がやむ
-      vs.is_snow = false;
+      vs.weather = SUNNY;
     }
   } else {
     // 雪が降っていない
-    if (f_rand < SHOW_POSSIBILYTY) {
+    if (f_rand < SHOW_POSSIBILITY) {
       // 雪が降り始める
-      vs.is_snow = true;
+      vs.weather = SNOW;
     }
   }
 }

@@ -1,10 +1,14 @@
 # cpp-01-project-ja
 
+## 環境
+- Ubunut
+
+
 ## セットアップと実行の手順
-- ビルド
+- ビルド(ubuntu)
 ```
-$ g++ -std=c++17 src/*.cpp src/*.h -o main
-```
+$ g++ -std=c++17 src/*.cpp  -o main
+``````
 
 - 実行
 ```

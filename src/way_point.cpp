@@ -20,7 +20,7 @@ void WayPointCheck(const std::vector<std::vector<char>>& map, VehicleState& vehi
         std::cout << "GAS STATION.DO YOU WANT TO REFUEL?  [y]:YES, [n]:NO" << std::endl;
         char c;
         std::cin >> c;
-        if (c = 'y') {
+        if (c == 'y') {
           vehicle_state.fuel = std::min(vehicle_state.fuel + FUEL_CHARGE, FUEL_MAX);
           vehicle_state.fuel_count -= 1;
           std::cout << "REFUEL COMPLETED " << std::endl;
